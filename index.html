@@ -3,46 +3,63 @@
 <head>
   <meta charset="utf-8">
   <title>Telegram Mini App Wrapper</title>
-  <!-- Telegram WebApp SDK -->
+  <!-- 1) Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <!-- 1) Стили для отключения «перепрокрутки» вверх -->
+  <!-- 2) Стили: запрещаем overscroll у контейнера и iframe -->
   <style>
     html, body {
       height: 100%;
       margin: 0;
-      /* предотвращаем «отскок» и передачу жеста контейнеру Telegram */
+      overscroll-behavior-y: contain;  /* не даёт «отдавать» жесты вверх Telegram */
+      overflow: hidden;                 /* прокрутка только внутри iframe */
+    }
+    #miniapp-frame {
+      width: 100vw;
+      height: 100vh;
+      border: none;
       overscroll-behavior-y: contain;
-      touch-action: pan-y;
     }
   </style>
+</head>
+<body>
+  <!-- Спиннер на время инициализации -->
+  <div id="loader" style="display:flex; justify-content:center; align-items:center; height:100vh;">
+    <p>Загрузка приложения…</p>
+  </div>
 
-  <!-- 2) Логика редиректа + блокировка скролла -->
+  <!-- 3) Пустой iframe, в который мы подгрузим FlutterFlow -->
+  <iframe
+    id="miniapp-frame"
+    style="display:none;"
+    allow="clipboard-write; geolocation; microphone; camera"
+  ></iframe>
+
   <script>
     window.addEventListener('DOMContentLoaded', () => {
       const tg = window.Telegram.WebApp;
       tg.expand();
 
-      // Блокируем дефолтное поведение touchmove (на случай, если CSS не сработает)
-      document.body.addEventListener('touchmove', function(e) {
-        // Позволяем скроллить содержимое внутри iframe FlutterFlow,
-        // но не допускаем захвата жеста Telegram-клиентом
-        e.stopPropagation();
-      }, { passive: false });
-
-      // Собираем initData и делаем редирект
+      // получаем защищённые данные
       const initData = encodeURIComponent(tg.initData);
-      const target = `https://andrey-ch6zxh.flutterflow.app/?initData=${initData}`;
-      window.location.replace(target);
+      const ffUrl = `https://andrey-ch6zxh.flutterflow.app/?initData=${initData}`;
+
+      // настраиваем и показываем iframe
+      const iframe = document.getElementById('miniapp-frame');
+      iframe.src = ffUrl;
+
+      // когда FlutterFlow загрузится в iframe — убираем спиннер
+      iframe.addEventListener('load', () => {
+        document.getElementById('loader').style.display = 'none';
+        iframe.style.display = 'block';
+      });
+
+      // блокируем скролл страницы-оболочки (на случай захвата жеста)
+      document.body.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
     });
   </script>
-</head>
-<body>
-  <!-- Лоадер, пока идёт перенаправление -->
-  <div style="display:flex; justify-content:center; align-items:center; height:100vh; margin:0;">
-    <p>Загрузка приложения…</p>
-  </div>
 </body>
 </html>
+
 
 
