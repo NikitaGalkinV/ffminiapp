@@ -3,26 +3,18 @@
 <head>
   <meta charset="utf-8">
   <title>Telegram Mini App Wrapper</title>
-  <!-- 1) Подключаем Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
     window.addEventListener('DOMContentLoaded', () => {
-      // 2) Инициализируем WebApp
       const tg = window.Telegram.WebApp;
-      tg.expand(); // по желанию разворачиваем на весь экран
-      
-      // 3) Собираем initData
+      tg.expand();
       const initData = encodeURIComponent(tg.initData);
-      
-      // 4) Редиректим на ваш FlutterFlow-URL, передавая initData как query param
-      //    или вставляем в hash (#initData=...)
-      const target = `https://<https://andrey-ch6zxh.flutterflow.app/>/?initData=${initData}`;
+      const target = `https://andrey-ch6zxh.flutterflow.app/?initData=${initData}`;
       window.location.replace(target);
     });
   </script>
 </head>
 <body>
-  <!-- можно добавить спиннер или лоадер -->
   <div style="display:flex;justify-content:center;align-items:center;height:100vh;">
     <p>Загрузка приложения…</p>
   </div>
