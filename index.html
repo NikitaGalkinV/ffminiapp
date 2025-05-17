@@ -6,12 +6,39 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     html, body {
-      height: 100%;
       margin: 0;
       padding: 0;
+      height: 100%;
       overflow: hidden;
-      overscroll-behavior: contain;
+      overscroll-behavior: none;
       background: #ffffff;
+    }
+
+    #wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #scroll-trap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 200%;
+      overflow-y: scroll;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    iframe {
+      position: absolute;
+      top: 1px; /* <- предотвращает scrollTop = 0 */
+      left: 0;
+      width: 100%;
+      height: calc(100% - 1px);
+      border: none;
+      display: block;
     }
 
     #loader {
@@ -20,44 +47,35 @@
       align-items: center;
       height: 100vh;
     }
-
-    #miniapp-frame {
-      display: none;
-      width: 100vw;
-      height: 100vh;
-      border: none;
-    }
   </style>
 </head>
 <body>
-  <div id="loader">
-    <p>Загрузка приложения…</p>
+  <div id="loader"><p>Загрузка приложения…</p></div>
+  <div id="wrapper" style="display: none;">
+    <div id="scroll-trap">
+      <iframe id="miniapp-frame" allow="clipboard-write; geolocation; microphone; camera"></iframe>
+    </div>
   </div>
-
-  <iframe
-    id="miniapp-frame"
-    allow="clipboard-write; geolocation; microphone; camera"
-  ></iframe>
 
   <script>
     window.addEventListener('DOMContentLoaded', () => {
       const tg = window.Telegram.WebApp;
-      tg.expand(); // открывает WebApp на весь экран
+      tg.expand();
 
-      // Создаём ссылку на FF
       const initData = encodeURIComponent(tg.initData);
       const url = `https://andrey-ch6zxh.flutterflow.app/?initData=${initData}`;
 
-      // Загружаем в iframe
       const iframe = document.getElementById('miniapp-frame');
       iframe.src = url;
 
       iframe.onload = () => {
         document.getElementById('loader').style.display = 'none';
-        iframe.style.display = 'block';
+        document.getElementById('wrapper').style.display = 'block';
+        // Устанавливаем прокрутку в середину (не на самый верх)
+        document.getElementById('scroll-trap').scrollTop = 1;
       };
 
-      // Блокируем overscroll вверх
+      // Блокируем scroll наружу
       document.body.addEventListener('touchmove', function (e) {
         e.preventDefault();
       }, { passive: false });
@@ -65,5 +83,6 @@
   </script>
 </body>
 </html>
+
 
 
