@@ -3,11 +3,34 @@
 <head>
   <meta charset="utf-8">
   <title>Telegram Mini App Wrapper</title>
+  <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- 1) Стили для отключения «перепрокрутки» вверх -->
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      /* предотвращаем «отскок» и передачу жеста контейнеру Telegram */
+      overscroll-behavior-y: contain;
+      touch-action: pan-y;
+    }
+  </style>
+
+  <!-- 2) Логика редиректа + блокировка скролла -->
   <script>
     window.addEventListener('DOMContentLoaded', () => {
       const tg = window.Telegram.WebApp;
       tg.expand();
+
+      // Блокируем дефолтное поведение touchmove (на случай, если CSS не сработает)
+      document.body.addEventListener('touchmove', function(e) {
+        // Позволяем скроллить содержимое внутри iframe FlutterFlow,
+        // но не допускаем захвата жеста Telegram-клиентом
+        e.stopPropagation();
+      }, { passive: false });
+
+      // Собираем initData и делаем редирект
       const initData = encodeURIComponent(tg.initData);
       const target = `https://andrey-ch6zxh.flutterflow.app/?initData=${initData}`;
       window.location.replace(target);
@@ -15,7 +38,8 @@
   </script>
 </head>
 <body>
-  <div style="display:flex;justify-content:center;align-items:center;height:100vh;">
+  <!-- Лоадер, пока идёт перенаправление -->
+  <div style="display:flex; justify-content:center; align-items:center; height:100vh; margin:0;">
     <p>Загрузка приложения…</p>
   </div>
 </body>
