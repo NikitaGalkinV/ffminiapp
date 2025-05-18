@@ -2,21 +2,85 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Telegram Mini App Wrapper</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Telegram Mini App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    /* Блокируем стандартную прокрутку */
+    body {
+      margin: 0;
+      overflow: hidden;
+      touch-action: none;
+      height: 100vh;
+    }
+    
+    #loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #app-iframe {
+      width: 100%;
+      height: 100vh;
+      border: none;
+      visibility: hidden; /* Скрываем до полной загрузки */
+    }
+  </style>
   <script>
     window.addEventListener('DOMContentLoaded', () => {
       const tg = window.Telegram.WebApp;
       tg.expand();
-      const initData = encodeURIComponent(tg.initData);
-      const target = `https://andrey-ch6zxh.flutterflow.app/?initData=${initData}`;
-      window.location.replace(target);
+      
+      // Создаем iframe
+      const iframe = document.createElement('iframe');
+      iframe.id = 'app-iframe';
+      iframe.src = `https://andrey-ch6zxh.flutterflow.app/?initData=${encodeURIComponent(tg.initData)}`;
+      document.body.appendChild(iframe);
+
+      // Блокировка свайпа для закрытия
+      let startY = 0;
+      let isDragging = false;
+
+      document.addEventListener('touchstart', e => {
+        startY = e.touches[0].clientY;
+        isDragging = true;
+      }, { passive: true });
+
+      document.addEventListener('touchmove', e => {
+        if (!isDragging) return;
+        
+        const currentY = e.touches[0].clientY;
+        const deltaY = currentY - startY;
+
+        // Разрешаем свайп вниз только если контент в самом верху
+        if (deltaY > 0 && window.scrollY <= 0) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      document.addEventListener('touchend', () => {
+        isDragging = false;
+      });
+
+      // Скрываем лоадер после загрузки
+      iframe.onload = () => {
+        document.getElementById('loader').style.display = 'none';
+        iframe.style.visibility = 'visible';
+      };
     });
   </script>
 </head>
 <body>
-  <div style="display:flex;justify-content:center;align-items:center;height:100vh;">
-    <p>Загрузка приложения…</p>
+  <div id="loader">
+    <p>Загрузка приложения...</p>
   </div>
 </body>
 </html>
